@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.flowbridge</groupId>
+        <artifactId>flowbridge-parent</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+
+    <artifactId>flowbridge-spring-boot-starter</artifactId>
+    <name>FlowBridge Spring Boot Starter</name>
+    <description>Spring Boot Auto-configuration Starter for FlowBridge</description>
+
+    <dependencies>
+        <!-- FlowBridge Modules -->
+        <dependency>
+            <groupId>org.flowbridge</groupId>
+            <artifactId>flowbridge-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.flowbridge</groupId>
+            <artifactId>flowbridge-local</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.flowbridge</groupId>
+            <artifactId>flowbridge-embedded</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.flowbridge</groupId>
+            <artifactId>flowbridge-kafka</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.flowbridge</groupId>
+            <artifactId>flowbridge-dashboard</artifactId>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.flowbridge</groupId>
+            <artifactId>flowbridge-kafka</artifactId>
+            <optional>true</optional>
+        </dependency>
+
+        <!-- Spring Boot Starter Autoconfigure -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-autoconfigure</artifactId>
+        </dependency>
+
+        <!-- Metadata generator for IDE auto-completion -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-configuration-processor</artifactId>
+            <optional>true</optional>
+        </dependency>
+
+        <!-- Spring Starter Test -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+</project>

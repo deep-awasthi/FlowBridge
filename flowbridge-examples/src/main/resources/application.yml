@@ -1,0 +1,28 @@
+# ─────────────────────────────────────────────────────────────
+# FlowBridge Example App — Default Configuration (local provider)
+# ─────────────────────────────────────────────────────────────
+
+spring:
+  application:
+    name: flowbridge-example
+
+# Use the in-memory local provider (no persistence, no Docker required)
+flowbridge:
+  provider: local
+
+server:
+  port: 8080
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info
+  endpoint:
+    health:
+      show-details: always
+
+logging:
+  level:
+    org.flowbridge: INFO
+    org.flowbridge.examples: DEBUG

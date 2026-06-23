@@ -1,0 +1,13 @@
+# ─────────────────────────────────────────────────────────────
+# FlowBridge Example App — Embedded RocksDB Provider Profile
+#
+# Activate with: --spring.profiles.active=embedded
+# or in Docker:  -e SPRING_PROFILES_ACTIVE=embedded
+# ─────────────────────────────────────────────────────────────
+
+flowbridge:
+  provider: embedded
+  embedded:
+    # Path to the RocksDB data directory.
+    # When running in Docker, this is mounted as a volume for persistence.
+    data-dir: ${FLOWBRIDGE_DATA_DIR:/data/flowbridge/rocksdb}

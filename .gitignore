@@ -1,0 +1,82 @@
+# ──────────────────────────────
+# Compiled class files
+# ──────────────────────────────
+target/
+*.class
+*.jar
+*.war
+*.ear
+
+# ──────────────────────────────
+# Maven
+# ──────────────────────────────
+.mvn/wrapper/maven-wrapper.jar
+!.mvn/wrapper/maven-wrapper.properties
+release.properties
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+dependency-reduced-pom.xml
+buildNumber.properties
+
+# ──────────────────────────────
+# IDE — IntelliJ IDEA
+# ──────────────────────────────
+.idea/
+*.iml
+*.iws
+*.ipr
+out/
+
+# ──────────────────────────────
+# IDE — VS Code
+# ──────────────────────────────
+.vscode/
+*.code-workspace
+
+# ──────────────────────────────
+# IDE — Eclipse
+# ──────────────────────────────
+.project
+.classpath
+.factorypath
+.settings/
+.springBeans
+.sts4-cache
+
+# ──────────────────────────────
+# OS Files
+# ──────────────────────────────
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# ──────────────────────────────
+# RocksDB data directories
+# ──────────────────────────────
+data/
+**/temp-rocksdb*/
+**/test-rocksdb*/
+
+# ──────────────────────────────
+# Logs
+# ──────────────────────────────
+*.log
+logs/
+
+# ──────────────────────────────
+# Docker
+# ──────────────────────────────
+# Keep docker-compose.yml and Dockerfile tracked
+!docker-compose.yml
+!Dockerfile
+
+# ──────────────────────────────
+# Testcontainers
+# ──────────────────────────────
+.testcontainers.properties

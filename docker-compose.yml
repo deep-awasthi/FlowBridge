@@ -1,0 +1,49 @@
+# ─────────────────────────────────────────────────────────────
+# FlowBridge Example App — Docker Compose
+#
+# Starts the Order Processing example in embedded (RocksDB) mode.
+# Events are persisted across restarts; the dashboard shows full
+# topic history and DLQ entries.
+#
+# Usage:
+#   docker compose up --build          # first run (builds image)
+#   docker compose up                  # subsequent runs
+#   docker compose down -v             # stop and remove volumes
+# ─────────────────────────────────────────────────────────────
+
+services:
+  flowbridge-example:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: flowbridge-example
+    image: flowbridge-example:latest
+
+    environment:
+      SPRING_PROFILES_ACTIVE: embedded
+      # Override RocksDB data dir to point at the mounted volume
+      FLOWBRIDGE_DATA_DIR: /data/flowbridge/rocksdb
+      # Tune JVM for containers
+      JAVA_TOOL_OPTIONS: >-
+        -XX:MaxRAMPercentage=75.0
+        -XX:+UseZGC
+
+    ports:
+      - "8080:8080"
+
+    volumes:
+      # Persist RocksDB data across container restarts
+      - flowbridge-data:/data/flowbridge/rocksdb
+
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/actuator/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+    restart: unless-stopped
+
+volumes:
+  flowbridge-data:
+    driver: local

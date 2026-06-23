@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="description" content="FlowBridge - Lightweight Event Bus Dashboard"/>
+    <title>FlowBridge Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com"/>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+    <style>
+        :root {
+            --bg-primary: #0d0f14;
+            --bg-secondary: #13151c;
+            --bg-card: #1a1d27;
+            --bg-card-hover: #1f2335;
+            --border: #262a3a;
+            --border-subtle: #1e2130;
+            --accent: #7c6af7;
+            --accent-dim: #5e4fd4;
+            --accent-glow: rgba(124, 106, 247, 0.15);
+            --green: #4ade80;
+            --green-dim: rgba(74, 222, 128, 0.12);
+            --amber: #fbbf24;
+            --amber-dim: rgba(251, 191, 36, 0.12);
+            --red: #f87171;
+            --red-dim: rgba(248, 113, 113, 0.12);
+            --blue: #60a5fa;
+            --blue-dim: rgba(96, 165, 250, 0.12);
+            --text-primary: #e2e8f0;
+            --text-secondary: #94a3b8;
+            --text-muted: #475569;
+            --shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
+            --radius: 12px;
+            --radius-sm: 8px;
+        }
+
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        /* ── Header ─────────────────────────────────────────── */
+        .header {
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border);
+            padding: 0 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(12px);
+        }
+        .header-inner {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 64px;
+        }
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+        }
+        .logo-icon {
+            width: 32px; height: 32px;
+            background: linear-gradient(135deg, var(--accent), #a78bfa);
+            border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 16px;
+        }
+        .logo-text {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            letter-spacing: -0.02em;
+        }
+        .logo-sub { font-weight: 400; color: var(--text-secondary); margin-left: 2px; }
+        .header-badge {
+            display: flex; align-items: center; gap: 8px;
+        }
+        .badge {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-weight: 500;
+            letter-spacing: 0.04em;
+        }
+        .badge-provider {
+            background: var(--accent-glow);
+            color: var(--accent);
+            border: 1px solid rgba(124, 106, 247, 0.3);
+        }
+        .badge-live {
+            background: var(--green-dim);
+            color: var(--green);
+            border: 1px solid rgba(74, 222, 128, 0.3);
+            display: flex; align-items: center; gap: 5px;
+        }
+        .dot-live {
+            width: 6px; height: 6px;
+            background: var(--green);
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.6; transform: scale(0.85); }
+        }
+
+        /* ── Main Layout ─────────────────────────────────────── */
+        .main {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        /* ── Flash Messages ──────────────────────────────────── */
+        .flash {
+            display: flex; align-items: flex-start; gap: 12px;
+            padding: 14px 18px;
+            border-radius: var(--radius-sm);
+            margin-bottom: 1.5rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            animation: slideDown 0.3s ease;
+        }
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .flash-success { background: var(--green-dim); color: var(--green); border: 1px solid rgba(74,222,128,0.25); }
+        .flash-error   { background: var(--red-dim);   color: var(--red);   border: 1px solid rgba(248,113,113,0.25); }
+        .flash-icon { font-size: 1rem; margin-top: 1px; }
+
+        /* ── Section Title ───────────────────────────────────── */
+        .section-title {
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            margin-bottom: 1rem;
+        }
+
+        /* ── Stats Grid ──────────────────────────────────────── */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2.5rem;
+        }
+        .stat-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            display: flex; flex-direction: column; gap: 8px;
+            transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s;
+            position: relative;
+            overflow: hidden;
+        }
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 3px;
+            border-radius: var(--radius) var(--radius) 0 0;
+        }
+        .stat-card:nth-child(1)::before { background: linear-gradient(90deg, var(--accent), #a78bfa); }
+        .stat-card:nth-child(2)::before { background: linear-gradient(90deg, var(--green), #34d399); }
+        .stat-card:nth-child(3)::before { background: linear-gradient(90deg, var(--amber), #f59e0b); }
+        .stat-card:nth-child(4)::before { background: linear-gradient(90deg, var(--blue),  #38bdf8); }
+        .stat-card:hover {
+            border-color: var(--border-subtle);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
+        }
+        .stat-label { font-size: 0.75rem; color: var(--text-muted); font-weight: 500; text-transform: uppercase; letter-spacing: 0.08em; }
+        .stat-value { font-size: 2rem; font-weight: 700; font-family: 'JetBrains Mono', monospace; line-height: 1; }
+        .stat-value.purple { color: var(--accent); }
+        .stat-value.green  { color: var(--green); }
+        .stat-value.amber  { color: var(--amber); }
+        .stat-value.blue   { color: var(--blue); }
+        .stat-sub { font-size: 0.75rem; color: var(--text-muted); }
+
+        /* ── Content Grid ────────────────────────────────────── */
+        .content-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        @media (max-width: 900px) { .content-grid { grid-template-columns: 1fr; } }
+
+        /* ── Card ─────────────────────────────────────────────── */
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            overflow: hidden;
+        }
+        .card-header {
+            padding: 1rem 1.25rem;
+            border-bottom: 1px solid var(--border-subtle);
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .card-title {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            display: flex; align-items: center; gap: 8px;
+        }
+        .card-title-icon { font-size: 1rem; }
+        .card-count {
+            font-size: 0.7rem;
+            background: var(--bg-secondary);
+            color: var(--text-secondary);
+            padding: 2px 8px;
+            border-radius: 20px;
+            font-family: 'JetBrains Mono', monospace;
+            border: 1px solid var(--border);
+        }
+        .card-body { padding: 0; }
+
+        /* ── Table ───────────────────────────────────────────── */
+        .table-wrapper { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; }
+        th {
+            font-size: 0.7rem; font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase; letter-spacing: 0.08em;
+            padding: 10px 1.25rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border-subtle);
+            background: var(--bg-secondary);
+        }
+        td {
+            padding: 12px 1.25rem;
+            font-size: 0.8125rem;
+            color: var(--text-secondary);
+            border-bottom: 1px solid var(--border-subtle);
+            vertical-align: middle;
+        }
+        tr:last-child td { border-bottom: none; }
+        tr:hover td { background: var(--bg-card-hover); }
+        .mono { font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; }
+
+        /* ── Pills / Tags ────────────────────────────────────── */
+        .pill {
+            display: inline-flex; align-items: center; gap: 4px;
+            font-size: 0.65rem; font-weight: 600;
+            padding: 2px 8px;
+            border-radius: 20px;
+            text-transform: uppercase; letter-spacing: 0.06em;
+        }
+        .pill-green { background: var(--green-dim);  color: var(--green);  border: 1px solid rgba(74,222,128,0.25); }
+        .pill-amber { background: var(--amber-dim);  color: var(--amber);  border: 1px solid rgba(251,191,36,0.25); }
+        .pill-red   { background: var(--red-dim);    color: var(--red);    border: 1px solid rgba(248,113,113,0.25); }
+        .pill-blue  { background: var(--blue-dim);   color: var(--blue);   border: 1px solid rgba(96,165,250,0.25); }
+        .pill-gray  { background: rgba(71,85,105,0.2); color: var(--text-muted); border: 1px solid rgba(71,85,105,0.3); }
+
+        /* ── Buttons ─────────────────────────────────────────── */
+        .btn {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            cursor: pointer;
+            border: none;
+            transition: all 0.15s;
+            font-family: inherit;
+            text-decoration: none;
+        }
+        .btn-accent {
+            background: var(--accent);
+            color: #fff;
+        }
+        .btn-accent:hover { background: var(--accent-dim); transform: translateY(-1px); }
+        .btn-danger {
+            background: var(--red-dim);
+            color: var(--red);
+            border: 1px solid rgba(248,113,113,0.3);
+        }
+        .btn-danger:hover { background: rgba(248,113,113,0.2); }
+        .btn-ghost {
+            background: transparent;
+            color: var(--text-secondary);
+            border: 1px solid var(--border);
+        }
+        .btn-ghost:hover { background: var(--bg-card-hover); color: var(--text-primary); }
+        .btn-group { display: flex; gap: 6px; }
+
+        /* ── Empty State ─────────────────────────────────────── */
+        .empty-state {
+            padding: 3rem 1.5rem;
+            text-align: center;
+            color: var(--text-muted);
+        }
+        .empty-state-icon { font-size: 2.5rem; margin-bottom: 0.75rem; opacity: 0.5; }
+        .empty-state-title { font-size: 0.875rem; font-weight: 600; margin-bottom: 0.25rem; color: var(--text-secondary); }
+        .empty-state-desc  { font-size: 0.75rem; }
+
+        /* ── Replay Panel ────────────────────────────────────── */
+        .replay-panel {
+            grid-column: 1 / -1;
+        }
+        .replay-form {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr auto;
+            gap: 0.75rem;
+            align-items: end;
+            padding: 1.25rem;
+        }
+        @media (max-width: 900px) {
+            .replay-form { grid-template-columns: 1fr 1fr; }
+            .replay-form .form-group:last-child { grid-column: 1 / -1; }
+        }
+        .form-group { display: flex; flex-direction: column; gap: 5px; }
+        .form-label { font-size: 0.7rem; font-weight: 500; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.08em; }
+        .form-control {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            color: var(--text-primary);
+            padding: 8px 12px;
+            font-size: 0.8125rem;
+            font-family: inherit;
+            outline: none;
+            transition: border-color 0.2s;
+            appearance: none;
+            -webkit-appearance: none;
+        }
+        .form-control:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); }
+        select.form-control {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2394a3b8' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 10px center;
+            padding-right: 28px;
+        }
+
+        /* ── Footer ──────────────────────────────────────────── */
+        .footer {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-muted);
+            font-size: 0.75rem;
+            border-top: 1px solid var(--border-subtle);
+            margin-top: 2rem;
+        }
+        .footer a { color: var(--accent); text-decoration: none; }
+        .footer a:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+
+<!-- ── Header ─────────────────────────────────────────────── -->
+<header class="header">
+    <div class="header-inner">
+        <a href="/flowbridge" class="logo">
+            <div class="logo-icon">⚡</div>
+            <span class="logo-text">FlowBridge <span class="logo-sub">/ Dashboard</span></span>
+        </a>
+        <div class="header-badge">
+            <span class="badge badge-provider" th:text="${provider}">Local</span>
+            <span class="badge badge-live"><span class="dot-live"></span> Live</span>
+        </div>
+    </div>
+</header>
+
+<!-- ── Main ──────────────────────────────────────────────── -->
+<main class="main">
+
+    <!-- Flash Messages -->
+    <div th:if="${success}" class="flash flash-success">
+        <span class="flash-icon">✓</span>
+        <span th:text="${success}"></span>
+    </div>
+    <div th:if="${error}" class="flash flash-error">
+        <span class="flash-icon">✕</span>
+        <span th:text="${error}"></span>
+    </div>
+
+    <!-- ── Stats ─────────────────────────────────────────── -->
+    <p class="section-title">Overview</p>
+    <div class="stats-grid">
+        <div class="stat-card">
+            <span class="stat-label">Active Topics</span>
+            <span class="stat-value purple" th:text="${totalTopics}">0</span>
+            <span class="stat-sub">Subscribed &amp; persisted</span>
+        </div>
+        <div class="stat-card">
+            <span class="stat-label">Persisted Messages</span>
+            <span class="stat-value green" th:text="${totalMessages}">0</span>
+            <span class="stat-sub">Stored in RocksDB</span>
+        </div>
+        <div class="stat-card">
+            <span class="stat-label">Dead Letter Queue</span>
+            <span class="stat-value amber" th:text="${dlqSize}">0</span>
+            <span class="stat-sub">Pending retry events</span>
+        </div>
+        <div class="stat-card">
+            <span class="stat-label">Provider</span>
+            <span class="stat-value blue" style="font-size:1.2rem;margin-top:4px" th:text="${provider}">Local</span>
+            <span class="stat-sub">Event bus backend</span>
+        </div>
+    </div>
+
+    <!-- ── Topics Table ──────────────────────────────────── -->
+    <div class="content-grid">
+        <div class="card">
+            <div class="card-header">
+                <span class="card-title"><span class="card-title-icon">📡</span> Topics</span>
+                <span class="card-count" th:text="${totalTopics} + ' total'">0 total</span>
+            </div>
+            <div class="card-body">
+                <div th:if="${#lists.isEmpty(topics)}" class="empty-state">
+                    <div class="empty-state-icon">📭</div>
+                    <div class="empty-state-title">No topics found</div>
+                    <div class="empty-state-desc">Publish your first event to see topics appear here.</div>
+                </div>
+                <div th:unless="${#lists.isEmpty(topics)}" class="table-wrapper">
+                    <table>
+                        <thead>
+                        <tr>
+                            <th>Topic</th>
+                            <th>Messages</th>
+                            <th>Subscribed</th>
+                            <th>Persisted</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="topic : ${topics}">
+                            <td class="mono" th:text="${topic.name}">user.created</td>
+                            <td class="mono" th:text="${topic.messageCount}">0</td>
+                            <td>
+                                <span th:if="${topic.isSubscribed}" class="pill pill-green">✓ Yes</span>
+                                <span th:unless="${topic.isSubscribed}" class="pill pill-gray">No</span>
+                            </td>
+                            <td>
+                                <span th:if="${topic.isPersisted}" class="pill pill-blue">✓ Yes</span>
+                                <span th:unless="${topic.isPersisted}" class="pill pill-gray">No</span>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── DLQ Table ──────────────────────────────────── -->
+        <div class="card">
+            <div class="card-header">
+                <span class="card-title"><span class="card-title-icon">☠️</span> Dead Letter Queue</span>
+                <span class="card-count" th:text="${dlqSize} + ' pending'">0 pending</span>
+            </div>
+            <div class="card-body">
+                <div th:if="${#lists.isEmpty(dlqRecords)}" class="empty-state">
+                    <div class="empty-state-icon">🎉</div>
+                    <div class="empty-state-title">DLQ is empty</div>
+                    <div class="empty-state-desc">No failed events. All consumers are healthy.</div>
+                </div>
+                <div th:unless="${#lists.isEmpty(dlqRecords)}" class="table-wrapper">
+                    <table>
+                        <thead>
+                        <tr>
+                            <th>Event ID</th>
+                            <th>Topic</th>
+                            <th>Error</th>
+                            <th>Actions</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="record : ${dlqRecords}">
+                            <td class="mono" th:text="${#strings.abbreviate(record.event.id, 14)}">abc123</td>
+                            <td class="mono" th:text="${record.event.topic}">user.created</td>
+                            <td>
+                                <span class="pill pill-red" th:text="${#strings.abbreviate(record.errorMessage, 24)}">Error</span>
+                            </td>
+                            <td>
+                                <div class="btn-group">
+                                    <form th:action="@{/flowbridge/dlq/retry}" method="post" style="display:inline">
+                                        <input type="hidden" name="eventId" th:value="${record.event.id}"/>
+                                        <button type="submit" class="btn btn-accent" title="Retry this event">↩ Retry</button>
+                                    </form>
+                                    <form th:action="@{/flowbridge/dlq/delete}" method="post" style="display:inline"
+                                          onsubmit="return confirm('Delete this DLQ entry?')">
+                                        <input type="hidden" name="eventId" th:value="${record.event.id}"/>
+                                        <button type="submit" class="btn btn-danger" title="Discard this event">✕ Discard</button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── Replay Panel ───────────────────────────────────── -->
+    <div class="content-grid">
+        <div class="card replay-panel">
+            <div class="card-header">
+                <span class="card-title"><span class="card-title-icon">⏪</span> Replay Events</span>
+                <span class="pill pill-amber">Embedded provider only</span>
+            </div>
+            <div class="card-body">
+                <form th:action="@{/flowbridge/replay}" method="post" class="replay-form" id="replay-form">
+                    <div class="form-group">
+                        <label class="form-label" for="replay-topic">Topic</label>
+                        <input id="replay-topic" name="topic" class="form-control"
+                               placeholder="e.g. user.created" required/>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="replay-type">Replay Type</label>
+                        <select id="replay-type" name="replayType" class="form-control" onchange="updateReplayFields(this.value)">
+                            <option value="ALL">All Events</option>
+                            <option value="FROM_OFFSET">From Offset</option>
+                            <option value="FROM_TIMESTAMP">From Timestamp</option>
+                        </select>
+                    </div>
+                    <div class="form-group" id="field-offset" style="display:none">
+                        <label class="form-label" for="replay-offset">Offset</label>
+                        <input id="replay-offset" name="offset" type="number" min="0"
+                               class="form-control" placeholder="0"/>
+                    </div>
+                    <div class="form-group" id="field-timestamp" style="display:none">
+                        <label class="form-label" for="replay-timestamp">Timestamp (ISO 8601)</label>
+                        <input id="replay-timestamp" name="timestamp" class="form-control"
+                               placeholder="2026-06-23T00:00:00Z"/>
+                    </div>
+                    <div class="form-group" style="padding-bottom: 1px;">
+                        <label class="form-label">&nbsp;</label>
+                        <button type="submit" class="btn btn-accent">⏪ Trigger Replay</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+</main>
+
+<!-- ── Footer ─────────────────────────────────────────────── -->
+<footer class="footer">
+    FlowBridge &mdash; Lightweight Event Bus for Spring Boot &bull;
+    <a href="https://github.com/flowbridge/flowbridge" target="_blank" rel="noopener">GitHub</a>
+</footer>
+
+<script>
+    function updateReplayFields(type) {
+        document.getElementById('field-offset').style.display    = (type === 'FROM_OFFSET')    ? 'flex' : 'none';
+        document.getElementById('field-timestamp').style.display = (type === 'FROM_TIMESTAMP') ? 'flex' : 'none';
+    }
+</script>
+</body>
+</html>
